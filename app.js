@@ -108,7 +108,7 @@ var getNewListings = function(before, callback) {
 
   request(options, function(error, response, body) {
     body = JSON.parse(body);
-    // console.log(response.headers);
+    console.log(response.headers);
     
     // Re-authenticate
     if (response.statusCode == 401) {
@@ -118,7 +118,7 @@ var getNewListings = function(before, callback) {
     }
 
     var count = (body.data && body.data.children) ? body.data.children.length : 0;
-    // console.log(count + " new listings");
+    console.log(count + " new listings");
 
     if (body.data && body.data.children.length > 0) {
       processListings(body.data.children);
@@ -139,7 +139,7 @@ var scrapeListings = function(before) {
 
 var processListings = function(listings) {
   _.each(listings, function(listing, index) {
-    pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
+    // pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
   });
 };
 
