@@ -108,8 +108,6 @@ var getNewListings = function(before, callback) {
 
   request(options, function(error, response, body) {
     body = JSON.parse(body);
-    console.log(response.headers);
-    console.log("Status: " + response.statusCode);
     
     // Re-authenticate
     if (response.statusCode == 401) {
@@ -122,6 +120,8 @@ var getNewListings = function(before, callback) {
     console.log(count + " new listings");
 
     if (count == 0) {
+      console.log(response.headers);
+      console.log("Status: " + response.statusCode);
       console.log(before);
     }
 
@@ -144,7 +144,7 @@ var scrapeListings = function(before) {
 
 var processListings = function(listings) {
   _.each(listings, function(listing, index) {
-    // pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
+    pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
   });
 };
 
