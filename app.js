@@ -108,7 +108,8 @@ var getNewListings = function(before, callback) {
 
   request(options, function(error, response, body) {
     body = JSON.parse(body);
-    console.log(response.headers["x-ratelimit-remaining"]);
+    console.log(response.headers);
+    console.log("Status: " + response.statusCode);
     
     // Re-authenticate
     if (response.statusCode == 401) {
