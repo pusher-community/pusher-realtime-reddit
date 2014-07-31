@@ -108,7 +108,7 @@ var getNewListings = function(before, callback) {
 
   request(options, function(error, response, body) {
     body = JSON.parse(body);
-    console.log(response.headers);
+    console.log(response.headers["x-ratelimit-remaining"]);
     
     // Re-authenticate
     if (response.statusCode == 401) {
@@ -139,7 +139,7 @@ var scrapeListings = function(before) {
 
 var processListings = function(listings) {
   _.each(listings, function(listing, index) {
-    // pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
+    pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
   });
 };
 
