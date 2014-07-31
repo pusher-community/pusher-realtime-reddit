@@ -121,6 +121,10 @@ var getNewListings = function(before, callback) {
     var count = (body.data && body.data.children) ? body.data.children.length : 0;
     console.log(count + " new listings");
 
+    if (count == 0) {
+      console.log(before);
+    }
+
     if (body.data && body.data.children.length > 0) {
       processListings(body.data.children);
       lastId = body.data.children[0].data.name;
@@ -140,7 +144,7 @@ var scrapeListings = function(before) {
 
 var processListings = function(listings) {
   _.each(listings, function(listing, index) {
-    pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
+    // pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
   });
 };
 
