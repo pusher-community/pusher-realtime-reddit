@@ -113,6 +113,9 @@ var getNewListings = function(callback) {
       return;
     }
 
+    console.log("Rate remaining: " + response.headers["x-ratelimit-remaining"]);
+    console.log("Status code: " + response.statusCode);
+
     if (body.data && body.data.children.length > 0) {
       processListings(body.data.children);
       previousListings = body.data.children;

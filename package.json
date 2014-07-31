@@ -1,5 +1,5 @@
 {
-  "name": "pusher-realtime-data-reddit",
+  "name": "pusher-realtime-reddit",
   "version": "0.0.1",
   "description": "Realtime API wrapper for Reddit, powered by Pusher.",
   "main": "app.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/pusher/pusher-realtime-data-reddit"
+    "url": "http://github.com/pusher/pusher-realtime-reddit"
   },
   "keywords": [
     "reddit",
@@ -21,9 +21,9 @@
   "author": "Robin Hawkes <robin@pusher.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/pusher/pusher-realtime-data-reddit/issues"
+    "url": "https://github.com/pusher/pusher-realtime-reddit/issues"
   },
-  "homepage": "https://github.com/pusher/pusher-realtime-data-reddit",
+  "homepage": "https://github.com/pusher/pusher-realtime-reddit",
   "dependencies": {
     "request": "~2.39.0",
     "underscore": "~1.6.0",
