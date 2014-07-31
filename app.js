@@ -32,6 +32,7 @@ var pusher = new Pusher({
 // REDDIT
 // --------------------------------------------------------------------
 var accessToken = "";
+var previousListings;
 var lastId;
 
 var getAccessToken = function(callback) {
@@ -91,12 +92,8 @@ var checkAccess = function(callback) {
   });
 };
 
-var getNewListings = function(before, callback) {
-  var url = "https://oauth.reddit.com/new.json?limit=100";
-
-  if (before) {
-    url += "&before=" + before;
-  }
+var getNewListings = function(callback) {
+  var url = "https://oauth.reddit.com/new.json?limit=50";
 
   var options = {
     url: url,
@@ -116,17 +113,9 @@ var getNewListings = function(before, callback) {
       return;
     }
 
-    var count = (body.data && body.data.children) ? body.data.children.length : 0;
-    console.log(count + " new listings");
-
-    if (count == 0) {
-      console.log(response.headers);
-      console.log("Status: " + response.statusCode);
-      console.log(before);
-    }
-
     if (body.data && body.data.children.length > 0) {
       processListings(body.data.children);
+      previousListings = body.data.children;
       lastId = body.data.children[0].data.name;
     }
 
@@ -134,18 +123,35 @@ var getNewListings = function(before, callback) {
   });
 };
 
-var scrapeListings = function(before) {
-  getNewListings(before, function() {
+var scrapeListings = function() {
+  getNewListings(function() {
     setTimeout(function() {
-      scrapeListings(lastId);
+      scrapeListings();
     }, 2000);
   });
 };
 
 var processListings = function(listings) {
+  var count = 0;
+
   _.each(listings, function(listing, index) {
-    pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
+    var exists = false;
+
+    // Look for existing listing
+    _.each(previousListings, function(prevListing) {
+      if (listing.data.name == prevListing.data.name) {
+        exists = true;
+        return;
+      }
+    });
+
+    if (!exists) {
+      pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
+      count++;
+    }
   });
+
+  console.log(count + " new listings");
 };
 
 var authenticateAndScrape = function() {
