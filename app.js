@@ -32,7 +32,7 @@ var pusher = new Pusher({
 // REDDIT
 // --------------------------------------------------------------------
 var accessToken = "";
-var previousListings;
+var previousListings = {};
 var lastId;
 
 var getAccessToken = function(callback) {
@@ -142,7 +142,6 @@ var getNewListings = function(callback) {
 
     if (body.data && body.data.children.length > 0) {
       processListings(body.data.children);
-      previousListings = body.data.children;
       lastId = body.data.children[0].data.name;
     }
 
@@ -171,14 +170,27 @@ var processListings = function(listings) {
     var exists = false;
 
     // Look for existing listing
-    _.each(previousListings, function(prevListing) {
-      if (listing.data.name == prevListing.data.name) {
-        exists = true;
-        return;
-      }
-    });
+    // TODO: Work out why some listings are still being sent multiple times
+    // _.each(previousListings[listing.data.subreddit], function(prevListing) {
+    //   if (listing.data.name == prevListing.data.name) {
+    //     exists = true;
+    //     return;
+    //   }
+    // });
 
-    if (!exists) {
+    if (!previousListings[listing.data.subreddit] || previousListings[listing.data.subreddit].indexOf(listing.data.name) < 0) {
+      console.log("Adding listing to previous listings for subreddit");
+      if (!previousListings[listing.data.subreddit]) {
+        previousListings[listing.data.subreddit] = [];
+      }
+
+      previousListings[listing.data.subreddit].unshift(listing.data.name);
+
+      // Cap previous listings
+      if (previousListings[listing.data.subreddit].length > 50) {
+        previousListings[listing.data.subreddit].splice(49);
+      }
+
       console.log("Triggering message on Pusher");
       pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
       count++;
