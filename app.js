@@ -36,6 +36,8 @@ var previousListings;
 var lastId;
 
 var getAccessToken = function(callback) {
+  console.log("getAccessToken()");
+
   var url = "https://ssl.reddit.com/api/v1/access_token";
 
   var options = {
@@ -49,10 +51,14 @@ var getAccessToken = function(callback) {
       user: config.reddit_app_id,
       pass: config.reddit_app_secret
     },
-    json: true
+    json: true,
+    timeout: 10000
   };
 
+  console.log("Requesting access token");
   request(options, function(error, response, body) {
+    console.log("Access token request callback");
+
     if (response.statusCode == 401) {
       console.log("Client credentials sent as HTTP Basic Authorization were invalid");
       return;
@@ -73,6 +79,8 @@ var getAccessToken = function(callback) {
 };
 
 var checkAccess = function(callback) {
+  console.log("checkAccess()");
+
   var url = "https://oauth.reddit.com/api/v1/me.json";
 
   var options = {
@@ -80,10 +88,14 @@ var checkAccess = function(callback) {
     auth: {
       bearer: accessToken
     },
-    json: true
+    json: true,
+    timeout: 10000
   };
 
+  console.log("Requesting me.json");
   request(options, function(error, response, body) {
+    console.log("me.json request callback");
+
     if (response.statusCode == 200) {
       callback(true);
     } else {
@@ -93,6 +105,8 @@ var checkAccess = function(callback) {
 };
 
 var getNewListings = function(callback) {
+  console.log("getNewListings()");
+
   var url = "https://oauth.reddit.com/new.json?limit=50";
 
   var options = {
@@ -100,10 +114,19 @@ var getNewListings = function(callback) {
     headers: {
       "Authorization": "bearer " + accessToken,
     },
-    gzip: true
+    gzip: true,
+    timeout: 10000
   };
 
+  console.log("Requesting new listings");
   request(options, function(error, response, body) {
+    console.log("New listings request callback");
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
     body = JSON.parse(body);
     
     // Re-authenticate
@@ -114,6 +137,7 @@ var getNewListings = function(callback) {
     }
 
     console.log("Rate remaining: " + response.headers["x-ratelimit-remaining"]);
+    console.log("Rate reset (seconds): " + response.headers["x-ratelimit-reset"]);
     console.log("Status code: " + response.statusCode);
 
     if (body.data && body.data.children.length > 0) {
@@ -127,7 +151,11 @@ var getNewListings = function(callback) {
 };
 
 var scrapeListings = function() {
+  console.log("------------------------------------------");
+  console.log(new Date().toString());
+  console.log("scrapeListings()");
   getNewListings(function() {
+    console.log("Starting scrape timer");
     setTimeout(function() {
       scrapeListings();
     }, 2000);
@@ -135,6 +163,8 @@ var scrapeListings = function() {
 };
 
 var processListings = function(listings) {
+  console.log("processListings()");
+
   var count = 0;
 
   _.each(listings, function(listing, index) {
@@ -149,6 +179,7 @@ var processListings = function(listings) {
     });
 
     if (!exists) {
+      console.log("Triggering message on Pusher");
       pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
       count++;
     }
@@ -158,7 +189,7 @@ var processListings = function(listings) {
 };
 
 var authenticateAndScrape = function() {
-  console.log("Authenticating");
+  console.log("authenticateAndScrape()");
   checkAccess(function(success) {
     if (!accessToken || !success) {    
       console.log("Access denied");
