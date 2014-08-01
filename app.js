@@ -1,11 +1,13 @@
 var _ = require("underscore");
 var request = require("request");
 
+var silent = true;
+
 var config;
 try {
   config = require("./config");
 } catch(e) {
-  console.log("Failed to find local config, falling back to environment variables");
+  if (!silent) console.log("Failed to find local config, falling back to environment variables");
   config = {
     reddit_app_id: process.env.REDDIT_APP_ID,
     reddit_app_secret: process.env.REDDIT_APP_SECRET,
@@ -37,7 +39,7 @@ var previousListings = {};
 var lastId;
 
 var getAccessToken = function(callback) {
-  console.log("getAccessToken()");
+  if (!silent) console.log("getAccessToken()");
 
   var url = "https://ssl.reddit.com/api/v1/access_token";
 
@@ -56,20 +58,20 @@ var getAccessToken = function(callback) {
     timeout: 10000
   };
 
-  console.log("Requesting access token");
+  if (!silent) console.log("Requesting access token");
   request(options, function(error, response, body) {
-    console.log("Access token request callback");
+    if (!silent) console.log("Access token request callback");
 
     if (response.statusCode == 401) {
-      console.log("Client credentials sent as HTTP Basic Authorization were invalid");
+      if (!silent) console.log("Client credentials sent as HTTP Basic Authorization were invalid");
       return;
     }
 
     if (body.error && body.error == "unsupported_grant_type") {
-      console.log("grant_type parameter was invalid");
+      if (!silent) console.log("grant_type parameter was invalid");
       return;
     } else if (body.error) {
-      console.log(body.error);
+      if (!silent) console.log(body.error);
       return;
     }
 
@@ -81,7 +83,7 @@ var getAccessToken = function(callback) {
 };
 
 var checkAccess = function(callback) {
-  console.log("checkAccess()");
+  if (!silent) console.log("checkAccess()");
 
   var url = "https://oauth.reddit.com/api/v1/me.json";
 
@@ -97,9 +99,9 @@ var checkAccess = function(callback) {
     timeout: 10000
   };
 
-  console.log("Requesting me.json");
+  if (!silent) console.log("Requesting me.json");
   request(options, function(error, response, body) {
-    console.log("me.json request callback");
+    if (!silent) console.log("me.json request callback");
 
     if (response.statusCode == 200) {
       callback(true);
@@ -110,7 +112,8 @@ var checkAccess = function(callback) {
 };
 
 var getNewListings = function(callback) {
-  console.log("getNewListings()");
+  console.log(new Date().toString());
+  if (!silent) console.log("getNewListings()");
 
   var url = "https://oauth.reddit.com/new.json?limit=50";
 
@@ -124,62 +127,89 @@ var getNewListings = function(callback) {
     timeout: 10000
   };
 
-  console.log("Requesting new listings");
+  if (!silent) console.log("Requesting new listings");
   request(options, function(error, response, body) {
-    console.log("New listings request callback");
+    if (!silent) console.log("New listings request callback");
 
     if (error) {
-      console.log("New listings request error");
-      console.log(error);
-      console.log(response);
+      if (!silent) console.log("New listings request error");
+      if (!silent) console.log(error);
+      if (!silent) console.log(response);
       callback();
       return;
     }
+
+    console.log("1");
     
     // Re-authenticate
-    if (response.statusCode == 401) {
-      console.log("HTTP 401 on /new.json");
+    if (response.statusCode && response.statusCode == 401) {
+      console.log("1.1");
+      if (!silent) console.log("HTTP 401 on /new.json");
       authenticateAndScrape();
       return;
     }
 
-    console.log("Rate remaining: " + response.headers["x-ratelimit-remaining"]);
-    console.log("Rate reset (seconds): " + response.headers["x-ratelimit-reset"]);
-    console.log("Status code: " + response.statusCode);
+    console.log("2");
 
-    body = JSON.parse(body);
-
-    if (body.data && body.data.children.length > 0) {
-      processListings(body.data.children);
-      lastId = body.data.children[0].data.name;
+    if (response.headers && response.headers["x-ratelimit-remaining"] && response.headers["x-ratelimit-reset"]) {
+      console.log("2.1");
+      if (!silent) console.log("Rate remaining: " + response.headers["x-ratelimit-remaining"]);
+      if (!silent) console.log("Rate reset (seconds): " + response.headers["x-ratelimit-reset"]);
     }
+
+    console.log("3");
+
+    if (response.statusCode) {
+      console.log("3.1");
+      if (!silent) console.log("Status code: " + response.statusCode);
+    }
+
+    console.log("4");
+
+    try {
+      body = JSON.parse(body);
+
+      console.log("5");
+
+      if (body.data && body.data.children.length > 0) {
+        console.log("5.1");
+        processListings(body.data.children);
+        lastId = body.data.children[0].data.name;
+      }
+    } catch(e) {
+      console.log("4.1");
+      callback();
+      return;
+    }
+
+    console.log("6");
 
     callback();
   });
 };
 
 var scrapeListings = function() {
-  console.log("------------------------------------------");
-  console.log(new Date().toString());
-  console.log("scrapeListings()");
+  if (!silent) console.log("------------------------------------------");
+  if (!silent) console.log(new Date().toString());
+  if (!silent) console.log("scrapeListings()");
   try {
     // Check access token time
     // 2700000 = 45 minutes
     if (Date.now() - accessTokenTime > 2700000) {
-      console.log("Refreshing token after 45 minutes");
+      if (!silent) console.log("Refreshing token after 45 minutes");
       authenticateAndScrape();
       return; 
     }
 
     getNewListings(function() {
-      console.log("Starting scrape timer");
+      if (!silent) console.log("Starting scrape timer");
       setTimeout(function() {
         scrapeListings();
       }, 2000);
     });
   } catch(e) {
-    console.log("Error");
-    console.log(e);
+    if (!silent) console.log("Error");
+    if (!silent) console.log(e);
 
     setTimeout(function() {
       scrapeListings();
@@ -188,14 +218,14 @@ var scrapeListings = function() {
 };
 
 var processListings = function(listings) {
-  console.log("processListings()");
+  if (!silent) console.log("processListings()");
 
   var count = 0;
 
   _.each(listings, function(listing, index) {
     // Look for existing listing
     if (!previousListings[listing.data.subreddit] || previousListings[listing.data.subreddit].indexOf(listing.data.name) < 0) {
-      console.log("Adding listing to previous listings for /r/" + listing.data.subreddit);
+      if (!silent) console.log("Adding listing to previous listings for /r/" + listing.data.subreddit);
       
       if (!previousListings[listing.data.subreddit]) {
         previousListings[listing.data.subreddit] = [];
@@ -205,30 +235,30 @@ var processListings = function(listings) {
 
       // Cap previous listings
       if (previousListings[listing.data.subreddit].length > 50) {
-        console.log("Cropping previous listings for /r/" + listing.data.subreddit);
+        if (!silent) console.log("Cropping previous listings for /r/" + listing.data.subreddit);
         previousListings[listing.data.subreddit].splice(49);
       }
 
-      console.log("Triggering message on Pusher");
+      if (!silent) console.log("Triggering message on Pusher");
       pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
       count++;
     }
   });
 
-  console.log(count + " new listings");
+  if (!silent) console.log(count + " new listings");
 };
 
 var authenticateAndScrape = function() {
-  console.log("authenticateAndScrape()");
+  if (!silent) console.log("authenticateAndScrape()");
   checkAccess(function(success) {
     if (!accessToken || !success) {    
-      console.log("Access denied");
+      if (!silent) console.log("Access denied");
       getAccessToken(function() {
-        console.log("Access granted");
+        if (!silent) console.log("Access granted");
         scrapeListings();
       });
     } else {
-      console.log("Access granted");
+      if (!silent) console.log("Access granted");
       scrapeListings();
     }
   });
@@ -238,8 +268,8 @@ authenticateAndScrape();
 
 // Capture uncaught errors
 process.on("uncaughtException", function(err) {
-  console.log(err);
+  if (!silent) console.log(err);
 
-  console.log("Attempting to restart scraper");
+  if (!silent) console.log("Attempting to restart scraper");
   scrapeListings();
 });
