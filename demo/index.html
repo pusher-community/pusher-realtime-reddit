@@ -11,18 +11,53 @@
 
     body {
       font-family: Helvetica Neueu, Verdana, Arial, sans-serif;
-      padding: 20px;
+    }
+
+    div {
+      float: left;
+      width: 25%;
+    }
+
+    h1 {
+      margin: 20px;
+    }
+
+    .listings {
+      box-sizing: border-box;
+      padding: 0 20px 0;
+      width: 100%;
     }
 
     li {
       margin-left: 20px;
       margin-top: 5px;
     }
+
+    img {
+      width: 100%;
+    }
   </style>
 </head>
 <body>
-  <h1>/r/askreddit</h1>
-  <ul class="reddit-listings"></ul>
+  <div>
+    <h1>/r/askreddit</h1>
+    <ul class="askreddit-listings listings"></ul>
+  </div>
+
+  <div>
+    <h1>/r/pics</h1>
+    <div class="pics-listings listings"></div>
+  </div>
+
+  <div>
+    <h1>/r/gifs</h1>
+    <div class="gifs-listings listings"></div>
+  </div>
+
+  <div>
+    <h1>/r/earthporn</h1>
+    <div class="earthporn-listings listings"></div>
+  </div>
 
   <script src="http://js.pusher.com/2.2/pusher.min.js"></script>
   <script src="pusher-reddit.js"></script>

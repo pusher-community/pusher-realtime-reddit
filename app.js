@@ -123,11 +123,11 @@ var getNewListings = function(callback) {
     console.log("New listings request callback");
 
     if (error) {
+      console.log("New listings request error");
       console.log(error);
+      callback();
       return;
     }
-
-    body = JSON.parse(body);
     
     // Re-authenticate
     if (response.statusCode == 401) {
@@ -139,6 +139,8 @@ var getNewListings = function(callback) {
     console.log("Rate remaining: " + response.headers["x-ratelimit-remaining"]);
     console.log("Rate reset (seconds): " + response.headers["x-ratelimit-reset"]);
     console.log("Status code: " + response.statusCode);
+
+    body = JSON.parse(body);
 
     if (body.data && body.data.children.length > 0) {
       processListings(body.data.children);
@@ -167,19 +169,10 @@ var processListings = function(listings) {
   var count = 0;
 
   _.each(listings, function(listing, index) {
-    var exists = false;
-
     // Look for existing listing
-    // TODO: Work out why some listings are still being sent multiple times
-    // _.each(previousListings[listing.data.subreddit], function(prevListing) {
-    //   if (listing.data.name == prevListing.data.name) {
-    //     exists = true;
-    //     return;
-    //   }
-    // });
-
     if (!previousListings[listing.data.subreddit] || previousListings[listing.data.subreddit].indexOf(listing.data.name) < 0) {
       console.log("Adding listing to previous listings for /r/" + listing.data.subreddit);
+      
       if (!previousListings[listing.data.subreddit]) {
         previousListings[listing.data.subreddit] = [];
       }
