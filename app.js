@@ -160,12 +160,21 @@ var scrapeListings = function() {
   console.log("------------------------------------------");
   console.log(new Date().toString());
   console.log("scrapeListings()");
-  getNewListings(function() {
-    console.log("Starting scrape timer");
+  try {
+    getNewListings(function() {
+      console.log("Starting scrape timer");
+      setTimeout(function() {
+        scrapeListings();
+      }, 2000);
+    });
+  } catch(e) {
+    console.log("Error");
+    console.log(e);
+    
     setTimeout(function() {
       scrapeListings();
     }, 2000);
-  });
+  };
 };
 
 var processListings = function(listings) {
