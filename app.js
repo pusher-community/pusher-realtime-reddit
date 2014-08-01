@@ -179,7 +179,7 @@ var processListings = function(listings) {
     // });
 
     if (!previousListings[listing.data.subreddit] || previousListings[listing.data.subreddit].indexOf(listing.data.name) < 0) {
-      console.log("Adding listing to previous listings for subreddit");
+      console.log("Adding listing to previous listings for /r/" + listing.data.subreddit);
       if (!previousListings[listing.data.subreddit]) {
         previousListings[listing.data.subreddit] = [];
       }
@@ -188,6 +188,7 @@ var processListings = function(listings) {
 
       // Cap previous listings
       if (previousListings[listing.data.subreddit].length > 50) {
+        console.log("Cropping previous listings for /r/" + listing.data.subreddit);
         previousListings[listing.data.subreddit].splice(49);
       }
 
