@@ -32,6 +32,7 @@ var pusher = new Pusher({
 // REDDIT
 // --------------------------------------------------------------------
 var accessToken = "";
+var accessTokenTime;
 var previousListings = {};
 var lastId;
 
@@ -73,6 +74,7 @@ var getAccessToken = function(callback) {
     }
 
     accessToken = body.access_token;
+    accessTokenTime = Date.now();
 
     callback();
   });
@@ -161,6 +163,14 @@ var scrapeListings = function() {
   console.log(new Date().toString());
   console.log("scrapeListings()");
   try {
+    // Check access token time
+    // 2700000 = 45 minutes
+    if (Date.now() - accessTokenTime > 2700000) {
+      console.log("Refreshing token after 45 minutes");
+      authenticateAndScrape();
+      return; 
+    }
+
     getNewListings(function() {
       console.log("Starting scrape timer");
       setTimeout(function() {
@@ -170,7 +180,7 @@ var scrapeListings = function() {
   } catch(e) {
     console.log("Error");
     console.log(e);
-    
+
     setTimeout(function() {
       scrapeListings();
     }, 2000);
@@ -225,3 +235,11 @@ var authenticateAndScrape = function() {
 };
 
 authenticateAndScrape();
+
+// Capture uncaught errors
+process.on("uncaughtException", function(err) {
+  console.log(err);
+
+  console.log("Attempting to restart scraper");
+  scrapeListings();
+});
