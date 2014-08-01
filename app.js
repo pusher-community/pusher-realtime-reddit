@@ -88,6 +88,9 @@ var checkAccess = function(callback) {
     auth: {
       bearer: accessToken
     },
+    headers: {
+      "User-Agent": "realtime-reddit/0.0.1 by Pusher"
+    },
     json: true,
     timeout: 10000
   };
@@ -113,6 +116,7 @@ var getNewListings = function(callback) {
     url: url,
     headers: {
       "Authorization": "bearer " + accessToken,
+      "User-Agent": "realtime-reddit/0.0.1 by Pusher"
     },
     gzip: true,
     timeout: 10000
@@ -125,6 +129,7 @@ var getNewListings = function(callback) {
     if (error) {
       console.log("New listings request error");
       console.log(error);
+      console.log(response);
       callback();
       return;
     }
