@@ -1,7 +1,7 @@
 var _ = require("underscore");
 var request = require("request");
 
-var silent = true;
+var silent = false;
 
 var config;
 try {
@@ -37,6 +37,8 @@ var accessToken = "";
 var accessTokenTime;
 var previousListings = {};
 var lastId;
+var scrapeTimer;
+var scrapeRequest;
 
 var getAccessToken = function(callback) {
   if (!silent) console.log("getAccessToken()");
@@ -112,7 +114,6 @@ var checkAccess = function(callback) {
 };
 
 var getNewListings = function(callback) {
-  console.log(new Date().toString());
   if (!silent) console.log("getNewListings()");
 
   var url = "https://oauth.reddit.com/new.json?limit=50";
@@ -128,7 +129,7 @@ var getNewListings = function(callback) {
   };
 
   if (!silent) console.log("Requesting new listings");
-  request(options, function(error, response, body) {
+  scrapeRequest = request(options, function(error, response, body) {
     if (!silent) console.log("New listings request callback");
 
     if (error) {
@@ -193,17 +194,20 @@ var scrapeListings = function() {
   if (!silent) console.log(new Date().toString());
   if (!silent) console.log("scrapeListings()");
   try {
+    if (!silent) console.log("Clearing scrape timer");
+    clearTimeout(scrapeTimer);
+
     // Check access token time
     // 2700000 = 45 minutes
     if (Date.now() - accessTokenTime > 2700000) {
       if (!silent) console.log("Refreshing token after 45 minutes");
-      authenticateAndScrape();
+      refreshAccessToken();
       return; 
     }
 
     getNewListings(function() {
       if (!silent) console.log("Starting scrape timer");
-      setTimeout(function() {
+      scrapeTimer = setTimeout(function() {
         scrapeListings();
       }, 2000);
     });
@@ -211,7 +215,7 @@ var scrapeListings = function() {
     if (!silent) console.log("Error");
     if (!silent) console.log(e);
 
-    setTimeout(function() {
+    scrapeTimer = setTimeout(function() {
       scrapeListings();
     }, 2000);
   };
@@ -264,6 +268,13 @@ var authenticateAndScrape = function() {
   });
 };
 
+var refreshAccessToken = function() {
+  getAccessToken(function() {
+    if (!silent) console.log("Access granted");
+    scrapeListings();
+  });
+};
+
 authenticateAndScrape();
 
 // Capture uncaught errors
@@ -271,5 +282,11 @@ process.on("uncaughtException", function(err) {
   if (!silent) console.log(err);
 
   if (!silent) console.log("Attempting to restart scraper");
+
+  if (!silent) console.log("Aborting previous request");
+  if (scrapeRequest) {
+    scrapeRequest.abort();
+  }
+
   scrapeListings();
 });
