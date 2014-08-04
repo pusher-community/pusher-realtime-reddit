@@ -134,56 +134,39 @@ var getNewListings = function(callback) {
 
     if (error) {
       if (!silent) console.log("New listings request error");
-      if (!silent) console.log(error);
+      console.log(error);
       if (!silent) console.log(response);
       callback();
       return;
     }
-
-    console.log("1");
     
     // Re-authenticate
     if (response.statusCode && response.statusCode == 401) {
-      console.log("1.1");
       if (!silent) console.log("HTTP 401 on /new.json");
       authenticateAndScrape();
       return;
     }
 
-    console.log("2");
-
     if (response.headers && response.headers["x-ratelimit-remaining"] && response.headers["x-ratelimit-reset"]) {
-      console.log("2.1");
       if (!silent) console.log("Rate remaining: " + response.headers["x-ratelimit-remaining"]);
       if (!silent) console.log("Rate reset (seconds): " + response.headers["x-ratelimit-reset"]);
     }
 
-    console.log("3");
-
     if (response.statusCode) {
-      console.log("3.1");
       if (!silent) console.log("Status code: " + response.statusCode);
     }
-
-    console.log("4");
 
     try {
       body = JSON.parse(body);
 
-      console.log("5");
-
       if (body.data && body.data.children.length > 0) {
-        console.log("5.1");
         processListings(body.data.children);
         lastId = body.data.children[0].data.name;
       }
     } catch(e) {
-      console.log("4.1");
       callback();
       return;
     }
-
-    console.log("6");
 
     callback();
   });
@@ -279,7 +262,7 @@ authenticateAndScrape();
 
 // Capture uncaught errors
 process.on("uncaughtException", function(err) {
-  if (!silent) console.log(err);
+  console.log(err);
 
   if (!silent) console.log("Attempting to restart scraper");
 
