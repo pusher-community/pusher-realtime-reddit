@@ -72,7 +72,7 @@ app.get("/stats/24hours.json", function(req, res) {
         text: "Past 24 hours",
         value: redditStats.overall.past24.total
       },
-      redditStats.overall.past24.data.reverse()
+      JSON.parse(JSON.stringify(redditStats.overall.past24.data)).reverse();
     ]
   };
 
