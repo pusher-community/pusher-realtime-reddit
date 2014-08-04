@@ -64,6 +64,23 @@ app.use(errorHandler({
 // Serve static files from directory
 app.use(express.static(root));
 
+// Get stats for past 24 hours
+app.get("/stats/24hours.json", function(req, res) {
+  var output = {
+    item: [
+      {
+        text: "Past 24 hours",
+        value: redditStats.overall.past24.total
+      },
+      [
+        redditStats.overall.past24.data
+      ]
+    ]
+  };
+
+  res.json(output);
+});
+
 // Open server on specified port
 if (!silent) console.log("Starting Express server");
 app.listen(process.env.PORT || 5001);
@@ -78,6 +95,17 @@ var previousListings = {};
 var lastId;
 var scrapeTimer;
 var scrapeRequest;
+
+var redditStats = {
+  overall: {
+    past24: {
+      total: 0,
+      lastTime: null,
+      // Per-minute, with anything after 24-hours removed
+      data: []
+    }
+  }
+};
 
 var getAccessToken = function(callback) {
   if (!silent) console.log("getAccessToken()");
@@ -270,6 +298,37 @@ var processListings = function(listings) {
       count++;
     }
   });
+
+  // Current time for stats
+  var statsTime = new Date();
+
+  // New minute
+  if (!redditStats.overall.past24.lastTime || redditStats.overall.past24.lastTime.getMinutes() != statsTime.getMinutes()) {
+    if (!silent) console.log("Adding to new stats minute");
+
+    redditStats.overall.past24.data.unshift(count);
+    redditStats.overall.past24.total += count;
+
+    // Crop array to last 24 hours (1440 minutes)
+    if (redditStats.overall.past24.data.length > 1440) {
+      if (!silent) console.log("Cropping stats array for past 24 hours");
+
+      // Crop
+      var removed = redditStats.overall.past24.data.splice(1439);
+
+      // Update total
+      _.each(removed, function(value) {
+        redditStats.overall.past24.total -= value;
+      });
+    }
+
+    redditStats.overall.past24.lastTime = statsTime;
+  } else {
+    // Add to most recent minute
+    if (!silent) console.log("Adding to existing stats minute");
+    redditStats.overall.past24.data[0] += count;
+    redditStats.overall.past24.total += count;
+  }
 
   if (!silent) console.log(count + " new listings");
 };
