@@ -3,7 +3,8 @@
 <head>
   <title>Pusher Realtime Data - Reddit</title>
 
-  <style type="text/css">
+  <link rel="stylesheet" type="text/css" href="pusher-reddit.css">
+  <!--<style type="text/css">
     * {
       margin: 0;
       padding: 0;
@@ -36,30 +37,32 @@
     img {
       width: 100%;
     }
-  </style>
+  </style>-->
 </head>
 <body>
-  <div>
-    <h1>/r/askreddit</h1>
-    <ul class="askreddit-listings listings"></ul>
-  </div>
+  <section>
+    <input class="typeahead" type="text" placeholder="AskReddit">
+    <ul class="listings"></ul>
+  </section>
 
-  <div>
-    <h1>/r/pics</h1>
-    <div class="pics-listings listings"></div>
-  </div>
+  <section>
+    <input class="typeahead" type="text" placeholder="pics">
+    <ul class="listings"></ul>
+  </section>
 
-  <div>
-    <h1>/r/gifs</h1>
-    <div class="gifs-listings listings"></div>
-  </div>
+  <section>
+    <input class="typeahead" type="text" placeholder="gifs">
+    <ul class="listings"></ul>
+  </section>
 
-  <div>
-    <h1>/r/earthporn</h1>
-    <div class="earthporn-listings listings"></div>
-  </div>
+  <section>
+    <input class="typeahead" type="text" placeholder="EarthPorn">
+    <ul class="listings"></ul>
+  </section>  
 
   <script src="http://js.pusher.com/2.2/pusher.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="typeahead.bundle.min.js"></script>
   <script src="pusher-reddit.js"></script>
 </body>
 </html>

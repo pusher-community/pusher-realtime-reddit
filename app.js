@@ -301,7 +301,7 @@ var processListings = function(listings) {
   var statsTime = new Date();
 
   // New minute
-  if (!redditStats.overall.past24.lastTime || redditStats.overall.past24.lastTime.getMinutes() != statsTime.getMinutes()) {
+  if (!redditStats.overall.past24.lastTime || redditStats.overall.past24.lastTime.getHours() != statsTime.getHours()) {
     if (!silent) console.log("Adding to new stats minute");
 
     redditStats.overall.past24.data.unshift(count);
