@@ -99,7 +99,7 @@ var redditStats = {
     past24: {
       total: 0,
       lastTime: null,
-      // Per-minute, with anything after 24-hours removed
+      // Per-hour, with anything after 24-hours removed
       data: []
     }
   }
@@ -307,12 +307,12 @@ var processListings = function(listings) {
     redditStats.overall.past24.data.unshift(count);
     redditStats.overall.past24.total += count;
 
-    // Crop array to last 24 hours (1440 minutes)
-    if (redditStats.overall.past24.data.length > 1440) {
+    // Crop array to last 24 hours
+    if (redditStats.overall.past24.data.length > 24) {
       if (!silent) console.log("Cropping stats array for past 24 hours");
 
       // Crop
-      var removed = redditStats.overall.past24.data.splice(1439);
+      var removed = redditStats.overall.past24.data.splice(23);
 
       // Update total
       _.each(removed, function(value) {
