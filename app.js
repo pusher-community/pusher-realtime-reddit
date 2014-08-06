@@ -24,7 +24,6 @@ var bodyParser = require("body-parser");
 var errorHandler = require("errorhandler");
 
 var app = express();
-var root = __dirname + "/demo";
 
 
 // --------------------------------------------------------------------
@@ -62,7 +61,7 @@ app.use(errorHandler({
 }));
 
 // Serve static files from directory
-app.use(express.static(root));
+// app.use(express.static(root));
 
 // Get stats for past 24 hours
 app.get("/stats/24hours.json", function(req, res) {
