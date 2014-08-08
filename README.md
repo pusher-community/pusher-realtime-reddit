@@ -2,6 +2,8 @@
 
 [Pusher](http://pusher.com) Realtime Reddit API, allowing you to subscribe to a live feed for any subreddit.
 
+Demo: http://realtime-reddit-demo.pusher.io
+
 
 ## API overview
 
@@ -20,7 +22,7 @@ The realtime Reddit API has been built with simplicity in mind. All you need to 
 Here's an example that subscribes to the "/r/AskReddit" subreddit using JavaScript and outputs each new story to the browser console:
 
 ```
-// Include the Pusher JavaScript library
+<!-- Include the Pusher JavaScript library -->
 <script src="http://js.pusher.com/2.2/pusher.min.js"></script>
 
 <script>
@@ -34,6 +36,6 @@ Here's an example that subscribes to the "/r/AskReddit" subreddit using JavaScri
   subredditChannel.bind("new-listing", function(listing) {
     // Output listing to the browser console
     console.log(listing);
-  };
+  });
 </script>
 ```
