@@ -1,7 +1,7 @@
 var _ = require("underscore");
 var request = require("request");
 
-var silent = false;
+var silent = true;
 
 var config;
 try {
@@ -49,8 +49,8 @@ app.use(bodyParser.json());
 
 // Simple logger
 app.use(function(req, res, next){
-  console.log("%s %s", req.method, req.url);
-  console.log(req.body);
+  if (!silent) console.log("%s %s", req.method, req.url);
+  if (!silent) console.log(req.body);
   next();
 });
 
