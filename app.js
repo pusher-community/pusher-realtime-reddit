@@ -224,14 +224,14 @@ var getNewListings = function(callback) {
       console.log(error);
       if (!silent) console.log(response);
 
-      callback();
+      setImmediate(callback);
       return;
     }
     
     // Re-authenticate
     if (response.statusCode && response.statusCode == 401) {
       if (!silent) console.log("HTTP 401 on /new.json");
-      authenticateAndScrape();
+      setImmediate(authenticateAndScrape);
       return;
     }
 
@@ -252,11 +252,11 @@ var getNewListings = function(callback) {
         lastId = body.data.children[0].data.name;
       }
     } catch(e) {
-      callback();
+      setImmediate(callback);
       return;
     }
 
-    callback();
+    setImmediate(callback);
   });
 };
 
@@ -272,7 +272,7 @@ var scrapeListings = function() {
     // 2700000 = 45 minutes
     if (Date.now() - accessTokenTime > 2700000) {
       if (!silent) console.log("Refreshing token after 45 minutes");
-      refreshAccessToken();
+      setImmediate(refreshAccessToken);
       return; 
     }
 
@@ -361,11 +361,11 @@ var authenticateAndScrape = function() {
       if (!silent) console.log("Access denied");
       getAccessToken(function() {
         if (!silent) console.log("Access granted");
-        scrapeListings();
+        setImmediate(scrapeListings);
       });
     } else {
       if (!silent) console.log("Access granted");
-      scrapeListings();
+      setImmediate(scrapeListings);
     }
   });
 };
@@ -373,7 +373,7 @@ var authenticateAndScrape = function() {
 var refreshAccessToken = function() {
   getAccessToken(function() {
     if (!silent) console.log("Access granted");
-    scrapeListings();
+    setImmediate(scrapeListings);
   });
 };
 
