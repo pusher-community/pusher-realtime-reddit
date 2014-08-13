@@ -316,6 +316,7 @@ var processListings = function(listings) {
 
       if (!silent) console.log("Triggering message on Pusher");
       pusher.trigger(listing.data.subreddit.toLowerCase(), "new-listing", listing.data);
+      pusher.trigger("@all", "new-listing", listing.data);
       count++;
     }
   });
