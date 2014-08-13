@@ -15,15 +15,35 @@ try {
     reddit_refresh_token: process.env.REDDIT_REFRESH_TOKEN,
     pusher_app_id: process.env.PUSHER_APP_ID,
     pusher_key: process.env.PUSHER_APP_KEY,
-    pusher_secret: process.env.PUSHER_APP_SECRET
+    pusher_secret: process.env.PUSHER_APP_SECRET,
+    sentry_dsl: process.env.SENTRY_DSL
   }
 }
+
+var raven = require("raven");
+var ravenClient = new raven.Client(config.sentry_dsl);
 
 var express = require("express");
 var bodyParser = require("body-parser");
 var errorHandler = require("errorhandler");
 
 var app = express();
+
+
+// --------------------------------------------------------------------
+// SENTRY
+// --------------------------------------------------------------------
+
+ravenClient.patchGlobal(function(sentryStatus, err) {
+  if (!silent) console.log("Attempting to restart scraper");
+
+  if (!silent) console.log("Aborting previous request");
+  if (scrapeRequest) {
+    scrapeRequest.abort();
+  }
+
+  scrapeListings();
+});
 
 
 // --------------------------------------------------------------------
@@ -47,24 +67,11 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-// Simple logger
-app.use(function(req, res, next){
-  if (!silent) console.log("%s %s", req.method, req.url);
-  if (!silent) console.log(req.body);
-  next();
-});
-
-// Error handler
-app.use(errorHandler({
-  dumpExceptions: true,
-  showStack: true
-}));
-
 // Serve static files from directory
 // app.use(express.static(root));
 
 // Get stats for past 24 hours
-app.get("/stats/24hours.json", function(req, res) {
+app.get("/stats/24hours.json", function(req, res, next) {
   var output = {
     item: [
       {
@@ -77,6 +84,22 @@ app.get("/stats/24hours.json", function(req, res) {
 
   res.json(output);
 });
+
+// Sentry
+app.use(raven.middleware.express(ravenClient));
+
+// Simple logger
+app.use(function(req, res, next){
+  if (!silent) console.log("%s %s", req.method, req.url);
+  if (!silent) console.log(req.body);
+  next();
+});
+
+// Error handler
+// app.use(errorHandler({
+//   dumpExceptions: true,
+//   showStack: true
+// }));
 
 // Open server on specified port
 if (!silent) console.log("Starting Express server");
@@ -200,6 +223,7 @@ var getNewListings = function(callback) {
       if (!silent) console.log("New listings request error");
       console.log(error);
       if (!silent) console.log(response);
+
       callback();
       return;
     }
@@ -354,17 +378,3 @@ var refreshAccessToken = function() {
 };
 
 authenticateAndScrape();
-
-// Capture uncaught errors
-process.on("uncaughtException", function(err) {
-  console.log(err);
-
-  if (!silent) console.log("Attempting to restart scraper");
-
-  if (!silent) console.log("Aborting previous request");
-  if (scrapeRequest) {
-    scrapeRequest.abort();
-  }
-
-  scrapeListings();
-});
